@@ -9,7 +9,7 @@ import RequestForm from './RequestForm';
 import { useRequests } from '@/hooks/useRequests';
 
 export default function Dashboard() {
-  const { requests, loading, error, fetchRequests, createRequest } = useRequests();
+  const { requests, loading, error, fetchRequests, createRequest, uploadAttachment } = useRequests();
   const [filters, setFilters] = useState({});
   const [selectedId, setSelectedId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -23,10 +23,11 @@ export default function Dashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleCreate(form) {
+  async function handleCreate(form, file) {
     setCreating(true);
     try {
       const req = await createRequest(form);
+      if (file) await uploadAttachment(req.request_id, file);
       setShowForm(false);
       setSelectedId(req.request_id);
       load();

@@ -16,8 +16,8 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { client_name, title, type, status, owner, priority, date_started, due_date, blockers } = body;
-    if (!client_name || !title) {
-      return NextResponse.json({ error: 'client_name and title are required' }, { status: 400 });
+    if (!client_name || !title || !body.notes?.trim()) {
+      return NextResponse.json({ error: 'client_name, title, and notes are required' }, { status: 400 });
     }
     const req = await queries.createRequest({ client_name, title, type, status, owner, priority, date_started, due_date, blockers });
     await sendSlackNotification(req, 'New request created');

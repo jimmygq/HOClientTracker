@@ -53,5 +53,12 @@ export function useRequests() {
     return data;
   }, []);
 
-  return { requests, loading, error, fetchRequests, fetchRequest, createRequest, updateRequest, deleteRequest, addUpdate, pingSlack };
+  const uploadAttachment = useCallback(async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await axios.post(`${API}/requests/${id}/attachment`, formData);
+    return data;
+  }, []);
+
+  return { requests, loading, error, fetchRequests, fetchRequest, createRequest, updateRequest, deleteRequest, addUpdate, pingSlack, uploadAttachment };
 }

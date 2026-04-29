@@ -21,7 +21,7 @@ export default function RequestDetailPanel({ requestId, onClose, onRefresh }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [addingUpdate, setAddingUpdate] = useState(false);
-  const { fetchRequest, updateRequest, addUpdate } = useRequests();
+  const { fetchRequest, updateRequest, addUpdate, uploadAttachment } = useRequests();
 
   const load = useCallback(async () => {
     if (!requestId) return;
@@ -30,10 +30,12 @@ export default function RequestDetailPanel({ requestId, onClose, onRefresh }) {
 
   useEffect(() => { load(); setEditing(false); }, [load]);
 
-  async function handleSave(form) {
+  async function handleSave(form, file) {
     setSaving(true);
     try {
-      setRequest(await updateRequest(requestId, { ...form, _author: 'Team' }));
+      let updated = await updateRequest(requestId, { ...form, _author: 'Team' });
+      if (file) updated = await uploadAttachment(requestId, file);
+      setRequest(updated);
       setEditing(false);
       onRefresh?.();
     } finally { setSaving(false); }
@@ -94,6 +96,24 @@ export default function RequestDetailPanel({ requestId, onClose, onRefresh }) {
               <Field label="Last Updated">{new Date(request.last_updated).toLocaleString()}</Field>
               <Field label="Blockers">{request.blockers || <span className="italic text-gray-400">None</span>}</Field>
             </div>
+            {request.notes && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Notes</div>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap rounded-lg bg-gray-50 border border-gray-200 px-4 py-3">{request.notes}</p>
+              </div>
+            )}
+            {request.attachment_url && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">Attachment</div>
+                <a href={request.attachment_url} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                  View attachment
+                </a>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 pt-1">
               <button onClick={() => setEditing(true)}
                 className="rounded-lg border border-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
