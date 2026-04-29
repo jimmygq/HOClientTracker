@@ -4,7 +4,7 @@ const { sendSlackNotification } = require('@/lib/slackNotifier');
 
 export async function GET(request, { params }) {
   try {
-    const req = queries.getRequestById(params.id);
+    const req = await queries.getRequestById(params.id);
     if (!req) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     return NextResponse.json(req);
   } catch (err) {
@@ -14,11 +14,11 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const existing = queries.getRequestById(params.id);
+    const existing = await queries.getRequestById(params.id);
     if (!existing) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
 
     const body = await request.json();
-    const updated = queries.updateRequest(params.id, body);
+    const updated = await queries.updateRequest(params.id, body);
     const author = body._author || null;
 
     if (updated.status !== existing.status) {
@@ -36,9 +36,9 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const existing = queries.getRequestById(params.id);
+    const existing = await queries.getRequestById(params.id);
     if (!existing) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
-    return NextResponse.json(queries.softDeleteRequest(params.id));
+    return NextResponse.json(await queries.softDeleteRequest(params.id));
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

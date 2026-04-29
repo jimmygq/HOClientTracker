@@ -29,25 +29,29 @@ export async function POST(request) {
       return null;
     }
 
-    const insert = db.prepare('INSERT OR IGNORE INTO clients (name, contact_name, contact_email, notes, created_at) VALUES (?, ?, ?, ?, ?)');
     let added = 0, skipped = 0;
+    const stmts = [];
 
-    const importMany = db.transaction((rows) => {
-      for (const row of rows) {
-        const name = pick(row, 'name', 'clientname', 'client', 'company', 'companyname');
-        if (!name) { skipped++; continue; }
-        const result = insert.run(
+    for (const row of rows) {
+      const name = pick(row, 'name', 'clientname', 'client', 'company', 'companyname');
+      if (!name) { skipped++; continue; }
+      stmts.push({
+        sql: 'INSERT OR IGNORE INTO clients (name, contact_name, contact_email, notes, created_at) VALUES (?, ?, ?, ?, ?)',
+        args: [
           name,
           pick(row, 'contactname', 'contact', 'contactperson', 'person'),
           pick(row, 'contactemail', 'email'),
           pick(row, 'notes', 'note', 'comments'),
-          now()
-        );
-        result.changes > 0 ? added++ : skipped++;
-      }
-    });
+          now(),
+        ],
+      });
+    }
 
-    importMany(rows);
+    if (stmts.length > 0) {
+      const results = await db.batch(stmts, 'write');
+      results.forEach(r => { r.rowsAffected > 0 ? added++ : skipped++; });
+    }
+
     return NextResponse.json({ ok: true, added, skipped, total: rows.length });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });

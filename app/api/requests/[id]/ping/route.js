@@ -4,7 +4,7 @@ const { sendSlackNotification } = require('@/lib/slackNotifier');
 
 export async function POST(request, { params }) {
   try {
-    const req = queries.getRequestById(params.id);
+    const req = await queries.getRequestById(params.id);
     if (!req) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     const { author } = await request.json();
     await sendSlackNotification(req, `:bell: Manual ping — current status: ${req.status}`, author || 'Team');

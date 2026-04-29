@@ -3,7 +3,7 @@ const queries = require('@/lib/queries');
 
 export async function GET() {
   try {
-    return NextResponse.json(queries.getStats());
+    return NextResponse.json(await queries.getStats());
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

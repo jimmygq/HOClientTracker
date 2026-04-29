@@ -6,7 +6,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const filters = Object.fromEntries(searchParams.entries());
-    return NextResponse.json(queries.getAllRequests(filters));
+    return NextResponse.json(await queries.getAllRequests(filters));
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -19,7 +19,7 @@ export async function POST(request) {
     if (!client_name || !title) {
       return NextResponse.json({ error: 'client_name and title are required' }, { status: 400 });
     }
-    const req = queries.createRequest({ client_name, title, type, status, owner, priority, date_started, due_date, blockers });
+    const req = await queries.createRequest({ client_name, title, type, status, owner, priority, date_started, due_date, blockers });
     await sendSlackNotification(req, 'New request created');
     return NextResponse.json(req, { status: 201 });
   } catch (err) {
