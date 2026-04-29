@@ -1,8 +1,13 @@
 require('dotenv').config();
-const { createClient } = require('@libsql/client');
+const { createClient } = require('@libsql/client/web');
+
+if (!process.env.TURSO_DATABASE_URL) {
+  console.error('Error: TURSO_DATABASE_URL is not set. Run with the env var prefixed:\n  TURSO_DATABASE_URL=libsql://... TURSO_AUTH_TOKEN=... node scripts/setup-db.js');
+  process.exit(1);
+}
 
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || 'file:./data/tracker.db',
+  url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
