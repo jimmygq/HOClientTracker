@@ -15,7 +15,7 @@ const COLUMNS = [
   { key: 'due_date', label: 'Due Date' },
 ];
 
-export default function RequestTable({ requests, onRowClick }) {
+export default function RequestTable({ requests, onRowClick, onEditClick }) {
   const [sortKey, setSortKey] = useState('request_id');
   const [sortDir, setSortDir] = useState('desc');
 
@@ -45,6 +45,7 @@ export default function RequestTable({ requests, onRowClick }) {
                 {col.label}{sortKey === col.key && <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>}
               </th>
             ))}
+            <th className="px-4 py-3 w-10" />
           </tr>
         </thead>
         <tbody>
@@ -65,6 +66,18 @@ export default function RequestTable({ requests, onRowClick }) {
                 <td className="px-4 py-3 text-gray-600">{req.owner || <span className="text-gray-400 italic">Unassigned</span>}</td>
                 <td className="px-4 py-3"><DaysOpenBadge dateStarted={req.date_started} /></td>
                 <td className="px-4 py-3"><DueDateBadge dueDate={req.due_date} status={req.status} /></td>
+                <td className="px-2 py-3 text-right">
+                  <button
+                    onClick={e => { e.stopPropagation(); onEditClick(req); }}
+                    className="rounded p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Edit request"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                </td>
               </tr>
             );
           })}

@@ -16,7 +16,7 @@ function Field({ label, children }) {
   );
 }
 
-export default function RequestDetailPanel({ requestId, onClose, onRefresh }) {
+export default function RequestDetailPanel({ requestId, startInEditMode, onClose, onRefresh }) {
   const [request, setRequest] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,7 +28,7 @@ export default function RequestDetailPanel({ requestId, onClose, onRefresh }) {
     try { setRequest(await fetchRequest(requestId)); } catch {}
   }, [requestId, fetchRequest]);
 
-  useEffect(() => { load(); setEditing(false); }, [load]);
+  useEffect(() => { load(); setEditing(!!startInEditMode); }, [load, startInEditMode]);
 
   async function handleSave(form, file) {
     setSaving(true);

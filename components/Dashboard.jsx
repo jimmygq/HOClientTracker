@@ -12,6 +12,7 @@ export default function Dashboard() {
   const { requests, loading, error, fetchRequests, createRequest, uploadAttachment } = useRequests();
   const [filters, setFilters] = useState({});
   const [selectedId, setSelectedId] = useState(null);
+  const [startInEditMode, setStartInEditMode] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [statsKey, setStatsKey] = useState(0);
@@ -67,16 +68,24 @@ export default function Dashboard() {
         {loading ? (
           <div className="text-center text-gray-400 py-12 text-sm">Loading requests…</div>
         ) : (
-          <RequestTable requests={requests} onRowClick={req => {
+          <RequestTable requests={requests}
+          onRowClick={req => {
             setShowForm(false);
+            setStartInEditMode(false);
             setSelectedId(req.request_id === selectedId ? null : req.request_id);
-          }} />
+          }}
+          onEditClick={req => {
+            setShowForm(false);
+            setStartInEditMode(true);
+            setSelectedId(req.request_id);
+          }}
+        />
         )}
       </div>
 
       {selectedId && (
         <div className="w-[480px] flex-shrink-0 border-l bg-white shadow-xl h-full overflow-y-auto">
-          <RequestDetailPanel requestId={selectedId} onClose={() => setSelectedId(null)} onRefresh={load} />
+          <RequestDetailPanel requestId={selectedId} startInEditMode={startInEditMode} onClose={() => { setSelectedId(null); setStartInEditMode(false); }} onRefresh={load} />
         </div>
       )}
     </div>
