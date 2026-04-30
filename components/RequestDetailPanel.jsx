@@ -21,14 +21,16 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [addingUpdate, setAddingUpdate] = useState(false);
-  const { fetchRequest, updateRequest, addUpdate, uploadAttachment } = useRequests();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { fetchRequest, updateRequest, deleteRequest, addUpdate, uploadAttachment } = useRequests();
 
   const load = useCallback(async () => {
     if (!requestId) return;
     try { setRequest(await fetchRequest(requestId)); } catch {}
   }, [requestId, fetchRequest]);
 
-  useEffect(() => { load(); setEditing(!!startInEditMode); }, [load, startInEditMode]);
+  useEffect(() => { load(); setEditing(!!startInEditMode); setConfirmDelete(false); }, [load, startInEditMode]);
 
   async function handleSave(form, file) {
     setSaving(true);
@@ -47,6 +49,15 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
       setRequest(await updateRequest(requestId, { status: 'Blocked', _author: 'Team' }));
       onRefresh?.();
     } finally { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await deleteRequest(requestId);
+      onRefresh?.();
+      onClose();
+    } finally { setDeleting(false); }
   }
 
   async function handleAddUpdate(author, note) {
@@ -87,6 +98,46 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
           </div>
         ) : (
           <>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit
+              </button>
+              {request.status !== 'Blocked' && (
+                <button onClick={handleMarkBlocked} disabled={saving}
+                  className="rounded-lg border border-orange-300 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-50 disabled:opacity-60 transition-colors">
+                  Mark Blocked
+                </button>
+              )}
+              <SlackPingButton requestId={request.request_id} />
+              {confirmDelete ? (
+                <div className="flex items-center gap-2 ml-auto">
+                  <span className="text-xs text-gray-500">Delete this request?</span>
+                  <button onClick={handleDelete} disabled={deleting}
+                    className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-60 transition-colors">
+                    {deleting ? 'Deleting…' : 'Confirm'}
+                  </button>
+                  <button onClick={() => setConfirmDelete(false)}
+                    className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmDelete(true)}
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <Field label="Client">{request.client_name}</Field>
               <Field label="Type">{request.type}</Field>
@@ -114,19 +165,6 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
                 </a>
               </div>
             )}
-            <div className="flex flex-wrap gap-2 pt-1">
-              <button onClick={() => setEditing(true)}
-                className="rounded-lg border border-gray-300 px-4 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors">
-                Edit
-              </button>
-              {request.status !== 'Blocked' && (
-                <button onClick={handleMarkBlocked} disabled={saving}
-                  className="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60 transition-colors">
-                  Mark Blocked
-                </button>
-              )}
-              <SlackPingButton requestId={request.request_id} />
-            </div>
           </>
         )}
 
