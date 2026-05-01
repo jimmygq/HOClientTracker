@@ -41,12 +41,10 @@ export default function App() {
         {/* Logo */}
         <div className="px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm">HO</span>
-            </div>
+            <img src="/logo.png" alt="Hire Overseas" className="w-9 h-9 rounded-xl object-contain" />
             <div>
               <div className="text-white font-bold text-sm leading-tight">Hire Overseas</div>
-              <div className="text-slate-400 text-[11px] leading-tight mt-0.5">Talent Management</div>
+              <div className="text-slate-400 text-[11px] leading-tight mt-0.5">Client Management</div>
             </div>
           </div>
         </div>
