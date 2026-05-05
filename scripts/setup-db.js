@@ -58,6 +58,7 @@ async function main() {
   try { await db.execute('ALTER TABLE requests ADD COLUMN due_date TEXT'); } catch (_) {}
   try { await db.execute('ALTER TABLE requests ADD COLUMN notes TEXT'); } catch (_) {}
   try { await db.execute('ALTER TABLE requests ADD COLUMN attachment_url TEXT'); } catch (_) {}
+  try { await db.execute('ALTER TABLE requests ADD COLUMN resolved_at TEXT'); } catch (_) {}
 
   const count = await db.execute('SELECT COUNT(*) as c FROM team_members');
   if (Number(count.rows[0].c) === 0) {
