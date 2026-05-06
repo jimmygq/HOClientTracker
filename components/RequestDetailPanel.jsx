@@ -51,6 +51,14 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
     } finally { setSaving(false); }
   }
 
+  async function handleMarkResolved() {
+    setSaving(true);
+    try {
+      setRequest(await updateRequest(requestId, { status: 'Resolved', _author: 'Team' }));
+      onRefresh?.();
+    } finally { setSaving(false); }
+  }
+
   async function handleDelete() {
     setDeleting(true);
     try {
@@ -107,10 +115,16 @@ export default function RequestDetailPanel({ requestId, startInEditMode, onClose
                 </svg>
                 Edit
               </button>
-              {request.status !== 'Blocked' && (
+              {request.status !== 'Blocked' && request.status !== 'Resolved' && (
                 <button onClick={handleMarkBlocked} disabled={saving}
                   className="rounded-lg border border-orange-300 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-50 disabled:opacity-60 transition-colors">
                   Mark Blocked
+                </button>
+              )}
+              {request.status !== 'Resolved' && (
+                <button onClick={handleMarkResolved} disabled={saving}
+                  className="rounded-lg border border-teal-300 px-4 py-1.5 text-sm font-semibold text-teal-700 hover:bg-teal-50 disabled:opacity-60 transition-colors">
+                  Mark Resolved
                 </button>
               )}
               <SlackPingButton requestId={request.request_id} />

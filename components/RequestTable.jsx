@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { StatusBadge, PriorityBadge, DaysOpenBadge, DueDateBadge } from './Badges';
 
+const STATUSES = ['New', 'In Progress', 'Pending Client', 'Blocked', 'Resolved', 'Cancelled'];
+
 const COLUMNS = [
   { key: 'request_id', label: 'ID' },
   { key: 'client_name', label: 'Client' },
@@ -15,9 +17,10 @@ const COLUMNS = [
   { key: 'due_date', label: 'Due Date' },
 ];
 
-export default function RequestTable({ requests, onRowClick, onEditClick }) {
+export default function RequestTable({ requests, onRowClick, onEditClick, onStatusChange }) {
   const [sortKey, setSortKey] = useState('request_id');
   const [sortDir, setSortDir] = useState('desc');
+  const [editingStatus, setEditingStatus] = useState(null);
 
   function handleSort(key) {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -73,7 +76,23 @@ export default function RequestTable({ requests, onRowClick, onEditClick }) {
                 <td className="px-4 py-3 font-medium text-gray-800">{req.client_name}</td>
                 <td className="px-4 py-3 max-w-xs truncate text-gray-700" title={req.title}>{req.title}</td>
                 <td className="px-4 py-3 text-gray-400 text-xs">{req.type}</td>
-                <td className="px-4 py-3"><StatusBadge status={req.status} /></td>
+                <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                  {editingStatus === req.request_id ? (
+                    <select
+                      autoFocus
+                      defaultValue={req.status}
+                      onChange={e => { onStatusChange(req.request_id, e.target.value); setEditingStatus(null); }}
+                      onBlur={() => setEditingStatus(null)}
+                      className="rounded-lg border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-teal-400"
+                    >
+                      {STATUSES.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  ) : (
+                    <button onClick={() => setEditingStatus(req.request_id)} title="Click to change status">
+                      <StatusBadge status={req.status} />
+                    </button>
+                  )}
+                </td>
                 <td className="px-4 py-3"><PriorityBadge priority={req.priority} /></td>
                 <td className="px-4 py-3 text-gray-500 text-xs">{req.owner || <span className="italic text-gray-300">Unassigned</span>}</td>
                 <td className="px-4 py-3"><DaysOpenBadge dateStarted={req.date_started} /></td>

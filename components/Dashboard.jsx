@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import StatCards from './StatCards';
 import FilterBar from './FilterBar';
 import RequestTable from './RequestTable';
 import RequestDetailPanel from './RequestDetailPanel';
@@ -9,17 +8,15 @@ import RequestForm from './RequestForm';
 import { useRequests } from '@/hooks/useRequests';
 
 export default function Dashboard() {
-  const { requests, loading, error, fetchRequests, createRequest, uploadAttachment } = useRequests();
+  const { requests, loading, error, fetchRequests, createRequest, updateRequest, uploadAttachment } = useRequests();
   const [filters, setFilters] = useState({});
   const [selectedId, setSelectedId] = useState(null);
   const [startInEditMode, setStartInEditMode] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [statsKey, setStatsKey] = useState(0);
 
   const load = useCallback(() => {
     fetchRequests(filters);
-    setStatsKey(k => k + 1);
   }, [filters, fetchRequests]);
 
   useEffect(() => { load(); }, [load]);
@@ -36,6 +33,15 @@ export default function Dashboard() {
       alert(err.response?.data?.error || 'Failed to create request.');
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleStatusChange(requestId, newStatus) {
+    try {
+      await updateRequest(requestId, { status: newStatus, _author: 'Team' });
+      load();
+    } catch {
+      alert('Failed to update status.');
     }
   }
 
@@ -65,8 +71,6 @@ export default function Dashboard() {
           <div className="mt-5 border-b border-gray-200" />
         </div>
 
-        <StatCards refreshKey={statsKey} />
-
         {showForm && (
           <div className="rounded-xl border bg-white p-6 shadow-sm mb-6">
             <h2 className="text-base font-semibold text-gray-800 mb-4">New Request</h2>
@@ -95,6 +99,7 @@ export default function Dashboard() {
               setStartInEditMode(true);
               setSelectedId(req.request_id);
             }}
+            onStatusChange={handleStatusChange}
           />
         )}
       </div>
